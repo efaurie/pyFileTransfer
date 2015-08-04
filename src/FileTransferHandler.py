@@ -1,17 +1,18 @@
 import os
+import time
 
 from FTPHandler import FTPHandler
 
 
 class FileTransferHandler:
-    def __init__(self, destination, username=None, password=None):
+    def __init__(self, destination, username=None, password=None, poll_time=30):
         self.destination = destination
-        if not os.path.exists(destination):
+        self.poll_time = poll_time
+        if self.is_local and not os.path.exists(destination):
             os.makedirs(destination)
 
         if not self.is_local:
-            self.ftp_handler = FTPHandler(self.hostname, username, password)
-            self.ftp_handler.remote_cd(self.destination_directory)
+            self.ftp_handler = FTPHandler(self.hostname, self.destination_directory, username, password)
 
     def transfer(self, source_file):
         if not self.file_is_ready(source_file):
@@ -39,16 +40,18 @@ class FileTransferHandler:
 
     @property
     def destination_directory(self):
-        return self.destination.split('@')[1]
+        destination_directory = self.destination.split('@')[1]
+        if not destination_directory.endswith('/'):
+            destination_directory += '/'
+        return destination_directory
 
-    # Attempt to rename file
-    # If it can, file isn't being written to by another process
     def file_is_ready(self, source_file):
-        try:
-            os.rename(source_file, '{0}.tmp'.format(source_file))
-            os.rename('{0}.tmp'.format(source_file), source_file)
+        initial_size = os.stat(source_file).st_size
+        time.sleep(self.poll_time)
+        post_size = os.stat(source_file).st_size
+        if initial_size == post_size:
             return True
-        except:
+        else:
             return False
 
     def local_transfer(self, source_file):
