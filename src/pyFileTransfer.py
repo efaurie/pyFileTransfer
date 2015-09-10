@@ -12,7 +12,7 @@ def init():
     parser.add_argument('-destination', help='The destination for files')
     parser.add_argument('-username', default=None, help='The FTP Username if remote')
     parser.add_argument('-password', default=None, help='The FTP Password if remote')
-    parser.add_argument('-spoll', default=2, type=int, help='The polling time of source directory in seconds')
+    parser.add_argument('-spoll', default=300, type=int, help='The polling time of source directory in seconds')
     parser.add_argument('-fpoll', default=30, type=int, help='The polling time of a file size to determine readiness in seconds')
     return parser.parse_args()
 
